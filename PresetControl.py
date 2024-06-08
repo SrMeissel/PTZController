@@ -1,4 +1,6 @@
 # This script can be used independently to change the preset of a camera using input arguments or from another script.
+# Usage: python PresetControl.py --IP="127.0.0.1" --PRESET=[NUMBER]
+
 # As is, the camera takes 3 seconds to change the preset, and 8.5 seconds to return.
 
 # To login:
@@ -14,31 +16,31 @@
 # turns out I don't need to login to change presets, just need to be on the live page
 
 from selenium import webdriver
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import WebDriverException
 
-# have not implemented error handling error handling.
 def change_preset(IP, PRESET):
     options = Options()
     options.add_argument("--headless")
     options.add_argument('--log-level=3')
     options.page_load_strategy = 'eager'
+
     driver = webdriver.Chrome(options=options)
+    driver.set_page_load_timeout(2)
+
     try:
         driver.get(f'http://{IP}/pages/live.asp')
     except WebDriverException as e:
         driver.close()
         raise ValueError("failed to connect to camera")
+    
     try:
         driver.execute_script(f"postPTZCtrl('preset_call', {PRESET});")
-        pass
     except WebDriverException as e:
         driver.close()
         raise ValueError("failed to change preset")
     
-    driver.quit()
+    driver.close()
 
 if __name__ == "__main__":
     import argparse
