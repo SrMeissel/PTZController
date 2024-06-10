@@ -46,6 +46,7 @@ class CameraController:
             
     def change_camera1_preset(self):
         self.window.nametowidget('camera1 status').configure(text="Changing preset...")
+        self.window.config(cursor="watch")
         self.window.update()
         preset = self.camera1_preset.get()
         try:
@@ -55,13 +56,16 @@ class CameraController:
                 print(arg)
             self.window.nametowidget('camera1' + self.camera1_currentPreset.get()).select()
             self.window.nametowidget('camera1 status').configure(text="Error Error Error")
+            self.window.config(cursor="")
             return
         
         self.window.nametowidget('camera1 status').configure(text="Preset changed to " + preset + " successfully" )
+        self.window.config(cursor="")
         self.camera1_currentPreset.set(preset)
 
     def change_camera2_preset(self):
         self.window.nametowidget('camera2 status').configure(text="Changing preset...")
+        self.window.config(cursor="watch")
         self.window.update()
         preset = self.camera2_preset.get()
         try:
@@ -71,9 +75,11 @@ class CameraController:
                 print(arg)
             self.window.nametowidget('camera2' + self.camera2_currentPreset.get()).select()
             self.window.nametowidget('camera2 status').configure(text="Error Error Error")
+            self.window.config(cursor="")
             return
         
         self.window.nametowidget('camera2 status').configure(text="Preset changed to " + preset + " successfully" )
+        self.window.config(cursor="")
         self.camera2_currentPreset.set(preset)
 
     def automatic_mode(self):
