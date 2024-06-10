@@ -1,5 +1,6 @@
-from multiprocessing import  Manager
+from multiprocessing import Manager
 import tkinter as tk
+import time
 
 import PresetControl 
 import RobotTracking
@@ -13,14 +14,18 @@ class CameraController:
         self.nameSpace = self.manager.Namespace()
 
         self.presets = open("presets.txt").read().lower().splitlines()
+        for i, line in enumerate(self.presets):
+            self.presets[i] = line.split(":")[0]
 
         self.nameSpace.camera1_preset = self.presets[0]
-        # self.nameSpace.camera1_preset.trace_add("write", self.change_camera1_preset)
+        self.camera1_preset = tk.StringVar()
+        self.camera1_preset.set(self.nameSpace.camera1_preset)
         self.camera1_currentPreset = tk.StringVar()
         self.camera1_currentPreset.set(self.nameSpace.camera1_preset)
 
         self.nameSpace.camera2_preset = self.presets[0]
-        # self.nameSpace.camera2_preset.trace_add("write", self.change_camera2_preset)
+        self.camera2_preset = tk.StringVar()
+        self.camera2_preset.set(self.nameSpace.camera2_preset)
         self.camera2_currentPreset = tk.StringVar()
         self.camera2_currentPreset.set(self.nameSpace.camera2_preset)
 
@@ -30,7 +35,7 @@ class CameraController:
         self.camera1_label.grid(column=0, row=0, padx=10)
 
         for i, preset in enumerate(self.presets):
-            tk.Radiobutton(self.window, text=preset, variable=self.nameSpace.camera1_preset, value=preset, name='camera1' + preset, command=self.change_camera1_preset, justify="left", anchor="w").grid(column=0, row=i+1, padx=10, pady=5, sticky = "w")
+            tk.Radiobutton(self.window, text=preset, variable=self.camera1_preset, value=preset, name='camera1' + preset, command=self.change_camera1_preset, justify="left", anchor="w").grid(column=0, row=i+1, padx=10, pady=5, sticky = "w")
 
         tk.Label(self.window, name='camera1 status').grid(column=0, row=self.presetRows+2, padx=10, pady=5)
 
@@ -38,7 +43,7 @@ class CameraController:
         self.camera2_label.grid(column=1, row=0, padx=10)
 
         for i, preset in enumerate(self.presets):
-            tk.Radiobutton(self.window, text=preset, variable=self.nameSpace.camera2_preset, value=preset, name='camera2' + preset, command=self.change_camera2_preset, justify="left", anchor="w").grid(column=1, row=i+1, padx=10, pady=5, sticky = "w")
+            tk.Radiobutton(self.window, text=preset, variable=self.camera2_preset, value=preset, name='camera2' + preset, command=self.change_camera2_preset, justify="left", anchor="w").grid(column=1, row=i+1, padx=10, pady=5, sticky = "w")
         
         tk.Label(self.window, name='camera2 status').grid(column=1, row=self.presetRows+2, padx=10, pady=5)
 
@@ -54,9 +59,13 @@ class CameraController:
         self.window.nametowidget('camera1 status').configure(text="Changing preset...")
         self.window.config(cursor="watch")
         self.window.update()
-        preset = self.nameSpace.camera1_preset
+        preset = self.camera1_preset.get()
+        print(preset)
         try:
-            PresetControl.change_preset("192.168.1.10", self.presets.index(preset))
+            if preset in self.presets:
+                PresetControl.change_preset("192.168.1.10", self.presets.index(preset))
+            else:
+                raise ValueError("Invalid preset")
         except ValueError as err:
             for arg in err.args:
                 print(arg)
@@ -73,9 +82,12 @@ class CameraController:
         self.window.nametowidget('camera2 status').configure(text="Changing preset...")
         self.window.config(cursor="watch")
         self.window.update()
-        preset = self.nameSpace.camera2_preset
+        preset = self.camera2_preset.get()
         try:
-            PresetControl.change_preset("192.168.1.9", self.presets.index(preset))
+            if preset in self.presets:
+                PresetControl.change_preset("192.168.1.9", self.presets.index(preset))
+            else:
+                raise ValueError("Invalid preset")
         except ValueError as err:
             for arg in err.args:
                 print(arg)
@@ -97,6 +109,21 @@ class CameraController:
             self.automatic_button.configure(relief='sunken', text='Automatic')
             RobotTracking.start(self.nameSpace)
             print("Automatic mode started")
+            while self.automatic_button.configure('relief')[-1] == 'sunken':
+                if self.camera1_currentPreset.get() != self.nameSpace.camera1_preset:
+                    try:
+                        self.camera1_preset.set(self.nameSpace.camera1_preset)
+                        self.change_camera1_preset()
+                    except:
+                        pass
+                if self.camera2_currentPreset.get() != self.nameSpace.camera2_preset:
+                    try:
+                        self.camera2_preset.set(self.nameSpace.camera2_preset)
+                        self.change_camera2_preset()
+                    except:
+                        pass
+                self.window.update()
+                time.sleep(5) # needs to be set to a time appropriate for changing the camera preset
 
     def run(self):
         self.window.mainloop()

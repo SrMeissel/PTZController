@@ -1,3 +1,4 @@
-Base Station
-Pallet
-Dispenser
+Base Station:C1P1
+Pallet:C1P2
+Dispenser:C2P1
+condiments:C2P2
