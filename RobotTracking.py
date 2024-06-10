@@ -1,24 +1,29 @@
-from multiprocessing import Process
+from multiprocessing import Process, Manager
 import time
 
-def start():
-    global process
-    process = Process(target=readPosition)
+process = None
 
-def readPosition():
+def start(nameSpace):
+    global process
+    process = Process(target=readPosition, args=(nameSpace, ))
+    process.start()
+
+def readPosition(nameSpace):
     CurrentPositionL = ""
     CurrentPositionXL = ""
     while True:
-        #change position.txt with robot position file
-        position = open("positionL.txt", "r").read().lower()
+        position = open("c:/Release/ordresweepL.txt.status", "r").read().lower()
         if position != CurrentPositionL:
             CurrentPositionL = position
-            print("Position Changed!")
+            nameSpace.camera1_preset = position
+            print("L Position Changed: ", position)
         
-        position = open("positionXL.txt", "r").read().lower()
+        position = open("c:/Release/ordresweepXL.txt.status", "r").read().lower()
         if position != CurrentPositionXL:
             CurrentPositionXL = position
-            print("Position Changed!")
+            nameSpace.camera2_preset = position
+            print("XL Position Changed:", position)
+
 
         time.sleep(1)
 def stop():
