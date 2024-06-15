@@ -1,4 +1,4 @@
-from multiprocessing import Manager
+from multiprocessing import Manager, freeze_support
 import tkinter as tk
 import time
 
@@ -135,5 +135,6 @@ class CameraController:
         self.window.destroy()
 
 if __name__ == "__main__":
+    freeze_support()
     controller = CameraController()
     controller.run()
